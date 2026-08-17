@@ -462,8 +462,8 @@ async function pickFromSearch(){
     const genre = [...selectedGenres][Math.floor(Math.random() * selectedGenres.size)];
     q += ` genre:"${genre}"`;
   }
-  const offset = Math.floor(Math.random() * 900);
-  const params = new URLSearchParams({q, type: 'track', limit: 50, offset});
+  const offset = Math.floor(Math.random() * 990);
+  const params = new URLSearchParams({q, type: 'track', limit: 10, offset});
   const res = await apiFetch(`https://api.spotify.com/v1/search?${params}`);
   if(!res.ok) throw new Error('検索失敗 HTTP ' + res.status);
   const data = await res.json();
