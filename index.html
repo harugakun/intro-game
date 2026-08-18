@@ -156,7 +156,7 @@
 
       <h2 style="margin-top:16px;">ジャンル</h2>
       <div class="chip-row" id="genreChips"></div>
-      <div class="hint">アニメを選ぶと、サウンドトラックやBGM系を除外してOP/EDに寄せた候補を優先します（完全ではありません）。</div>
+      <div class="hint">通常のジャンルは選んだ中からランダムに1つ使います（OR）。「邦楽(AND)」「洋楽(AND)」はどのジャンルが選ばれても必ず追加で絞り込みます（AND）。アニメを選ぶと、サウンドトラックやBGM系を除外してOP/EDに寄せた候補を優先します（完全ではありません）。</div>
 
       <h2 style="margin-top:16px;">キーワード（アーティスト名・アニメ名など）</h2>
       <div class="chip-row" id="keywordChips"></div>
@@ -214,7 +214,7 @@ const SCOPES = 'streaming user-read-email user-read-private user-modify-playback
 let player = null, deviceId = null;
 let mode = 'playlist';
 let playlistPool = [];
-let selectedEras = new Set(), selectedGenres = new Set(), selectedKeywords = new Set();
+let selectedEras = new Set(), selectedGenres = new Set(), selectedLangs = new Set(), selectedKeywords = new Set();
 let currentTrack = null;
 let recentTrackIds = [];
 const RECENT_LIMIT = 8;
@@ -450,7 +450,6 @@ async function pickFromSearchGenre(){
   const era = eras[Math.floor(Math.random() * eras.length)];
   const genreLabel = selectedGenres.size ? [...selectedGenres][Math.floor(Math.random() * selectedGenres.size)] : null;
   const genreTag = genreLabel ? GENRE_TAG_MAP[genreLabel] : null;
-  const langBias = genreLabel ? LANG_BIAS[genreLabel] : null;
 
   let q = `year:${eraToYearRange(era)}`;
   if(genreTag) q += ` genre:"${genreTag}"`;
@@ -467,8 +466,13 @@ async function pickFromSearchGenre(){
   }
   if(items.length === 0) return {track: null, note: '条件に合う曲が見つかりませんでした'};
 
-  if(genreTag === 'anime') items = biasJapanese(biasAnimeTracks(items));
-  else if(langBias) items = biasLanguage(items, langBias);
+  if(genreTag === 'anime') items = biasAnimeTracks(items);
+
+  if(selectedLangs.size){
+    selectedLangs.forEach(langLabel => { items = biasLanguage(items, LANG_BIAS[langLabel]); });
+  } else if(genreTag === 'anime'){
+    items = biasJapanese(items);
+  }
 
   return {track: pickRandomAvoidingRecent(items), note};
 }
@@ -567,9 +571,14 @@ function buildEraChips(){
 function buildGenreChips(){
   const wrap = $('genreChips'); wrap.innerHTML = '';
   GENRE_LIST.forEach(g => {
+    const isLang = LANG_BIAS.hasOwnProperty(g);
     const c = document.createElement('div');
-    c.className = 'chip'; c.textContent = g;
-    c.onclick = () => { c.classList.toggle('selected'); selectedGenres.has(g) ? selectedGenres.delete(g) : selectedGenres.add(g); };
+    c.className = 'chip'; c.textContent = isLang ? g + '(AND)' : g;
+    c.onclick = () => {
+      c.classList.toggle('selected');
+      const set = isLang ? selectedLangs : selectedGenres;
+      set.has(g) ? set.delete(g) : set.add(g);
+    };
     wrap.appendChild(c);
   });
 }
