@@ -59,8 +59,23 @@
   .tab{flex:1;text-align:center;padding:10px;border-radius:10px;font-size:12.5px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;background:var(--bg-raised);border:1px solid rgba(255,255,255,0.06);color:var(--text-dim);}
   .tab.active{background:rgba(232,185,74,0.12);border-color:var(--gold);color:var(--gold);}
   .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
-  .chip{padding:7px 12px;border-radius:999px;font-size:12px;background:#0F0D14;border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);cursor:pointer;user-select:none;}
+  .chip{padding:7px 12px;border-radius:999px;font-size:12px;background:#0F0D14;border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);cursor:pointer;user-select:none;transition:all 0.2s;}
   .chip.selected{background:rgba(255,75,62,0.16);border-color:var(--accent);color:var(--text);}
+
+  /* 言語絞り込み用チップデザイン */
+  .chip.filter-chip {
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.25);
+  }
+  .chip.filter-chip.selected {
+    background: rgba(232,185,74,0.15); 
+    border: 1px solid var(--gold);
+    color: var(--gold);
+  }
+  .chip.filter-chip .icon {
+    margin-right: 2px;
+    font-size: 13px;
+  }
 
   .stage{display:flex;flex-direction:column;align-items:center;padding:26px 0 8px;}
   .disc-wrap{position:relative;width:210px;height:210px;margin-bottom:18px;}
@@ -145,7 +160,7 @@
 
     <section id="playlistPanel" class="card">
       <h2>プレイリストURL / URI</h2>
-      <input type="text" id="playlistInput" placeholder="https://open.spotify.com/playlist/xxxxxxxx">
+      <input type="text" id="playlistInput" placeholder="例: https://open.spotify.com/playlist/xxxx">
       <button class="btn secondary" id="loadPlaylistBtn">読み込む</button>
       <div class="hint" id="playlistStatus">まだ読み込んでいません。公開プレイリストのURLを貼ってください。</div>
     </section>
@@ -156,12 +171,16 @@
 
       <h2 style="margin-top:16px;">ジャンル</h2>
       <div class="chip-row" id="genreChips"></div>
-      <div class="hint">通常のジャンルは選んだ中からランダムに1つ使います（OR）。「邦楽(AND)」「洋楽(AND)」はどのジャンルが選ばれても必ず追加で絞り込みます（AND）。アニメを選ぶと、サウンドトラックやBGM系を除外してOP/EDに寄せた候補を優先します（完全ではありません）。</div>
+      <div class="hint">指定したジャンルの中からランダムに1つ使って検索します。</div>
+
+      <h2 style="margin-top:16px;">言語・地域 (追加絞り込み)</h2>
+      <div class="chip-row" id="langChips"></div>
+      <div class="hint">検索結果の中から、日本語や英語の曲にさらに絞り込みます（AND条件）。</div>
 
       <h2 style="margin-top:16px;">キーワード（アーティスト名・アニメ名など）</h2>
       <div class="chip-row" id="keywordChips"></div>
       <input type="text" id="keywordInput" placeholder="例: LiSA / 鬼滅の刃（Enterで追加）">
-      <div class="hint">キーワードを1つ以上追加すると、ジャンルの代わりにそちらを使って検索します。年代を選んでいれば絞り込みにも使います。</div>
+      <div class="hint">キーワードを追加すると、ジャンル検索の代わりにそちらを優先して検索します。</div>
     </section>
 
     <div class="stage">
@@ -328,34 +347,63 @@ async function initPlayer(){
 
 /* ================= プレイリストモード ================= */
 function extractPlaylistId(input){
+  input = input.trim();
+  if(!input) return null;
+  // URI形式 (spotify:playlist:xxx)
+  if(input.startsWith('spotify:playlist:')){
+    return input.split(':')[2].split('?')[0];
+  }
+  // URL形式
+  try {
+    const url = new URL(input);
+    if(url.pathname.includes('/playlist/')){
+      const parts = url.pathname.split('/');
+      const idx = parts.indexOf('playlist');
+      return parts[idx + 1];
+    }
+  } catch(e) {}
+  
+  // 文字列ベースのフォールバック
   const m = input.match(/playlist[\/:]([a-zA-Z0-9]+)/);
-  return m ? m[1] : input.trim();
+  return m ? m[1] : input;
 }
+
 async function loadPlaylist(){
-  const raw = $('playlistInput').value.trim();
-  if(!raw) return;
+  const raw = $('playlistInput').value;
+  if(!raw.trim()) return;
   $('playlistStatus').textContent = '読み込み中…';
   const id = extractPlaylistId(raw);
+  
+  if(!id) {
+    $('playlistStatus').textContent = 'プレイリストIDを取得できませんでした。正しいURLを確認してください。';
+    return;
+  }
+  
   let items = [];
-  let url = `https://api.spotify.com/v1/playlists/${id}/items?limit=100&fields=next,items(track(id,uri,name,artists(name),album(images),type))`;
+  let url = `https://api.spotify.com/v1/playlists/${id}/tracks?limit=100`;
+  
   try{
     while(url){
       const res = await apiFetch(url);
       if(res.status === 404){
-        $('playlistStatus').textContent = 'このプレイリストは読み込めませんでした。Spotifyが自動生成する「Daily Mix」「Discover Weekly」「あなたのミックス」などのプレイリストは、2024年の仕様変更で外部アプリから取得できなくなっています。自分で作った通常のプレイリストでお試しください。';
+        $('playlistStatus').textContent = 'プレイリストが見つかりません。非公開設定になっているか、Spotify自動生成プレイリストの可能性があります。';
         return;
       }
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      items = items.concat(data.items.map(i => i.track).filter(t => t && t.uri && t.type === 'track'));
+      
+      const tracks = data.items.map(i => i.track).filter(t => t && t.uri && t.type === 'track' && !t.is_local);
+      items = items.concat(tracks);
+      
       url = data.next;
     }
     playlistPool = items;
     $('playlistStatus').textContent = `${items.length}曲読み込みました。再生ボタンでスタート！`;
   }catch(err){
-    $('playlistStatus').textContent = '読み込み失敗（公開プレイリストか確認してください）: ' + err.message;
+    $('playlistStatus').textContent = '読み込み失敗: ' + err.message;
   }
 }
+
 function pickFromPlaylist(){
   if(playlistPool.length === 0) return null;
   return pickRandomAvoidingRecent(playlistPool);
@@ -375,16 +423,25 @@ function pickRandomAvoidingRecent(items){
 
 /* ================= 検索モード：共通ヘルパー ================= */
 const ERA_LIST = ['1960s','1970s','1980s','1990s','2000s','2010s','2020s'];
+// SpotifyのSearch APIで確実に機能する公式ジャンルに厳選
 const GENRE_TAG_MAP = {
-  'ポップス':'pop', 'ロック':'rock', 'J-POP':'j-pop', 'アニメ':'anime',
-  'ヒップホップ':'hip-hop', 'ジャズ':'jazz', 'EDM':'edm', 'シティポップ':'city pop',
-  'K-POP':'k-pop', 'クラシック':'classical', '演歌':'enka', 'R&B':'r&b',
-  '邦楽': null, '洋楽': null
+  'ポップス':'pop', 
+  'ロック':'rock', 
+  'J-POP':'j-pop', 
+  'アニメ':'anime',
+  'ヒップホップ':'hip-hop', 
+  'ジャズ':'jazz', 
+  'EDM':'edm', 
+  'K-POP':'k-pop', 
+  'クラシック':'classical', 
+  'R&B':'r-n-b',
+  'ソウル':'soul',
+  'メタル':'metal'
 };
-/* 邦楽/洋楽はSpotify側に対応する正式ジャンルタグが無いため、genre:フィルタではなく
-   曲名・アーティスト名の日本語文字有無で絞り込む後処理バイアスとして扱う */
-const LANG_BIAS = { '邦楽': 'jp', '洋楽': 'intl' };
 const GENRE_LIST = Object.keys(GENRE_TAG_MAP);
+
+// 邦楽/洋楽などの追加フィルター用
+const LANG_OPTIONS = { '邦楽': 'jp', '洋楽': 'intl' };
 const ANIME_EXCLUDE_RE = /soundtrack|サウンドトラック|score|scoring|bgm|o\.?s\.?t\.?|instrumental|image song|character song|ost/i;
 const JP_CHAR_RE = /[\u3040-\u30ff\u4e00-\u9faf]/;
 
@@ -414,7 +471,6 @@ async function fetchSearchPage(q, offset){
   return res.json();
 }
 
-/* 総件数を先に取得し、有効な範囲内でランダムページを何枚か集めてプールを作る */
 async function randomTrackPool(q, pages=3){
   const first = await fetchSearchPage(q, 0);
   const totalCount = first.tracks?.total || 0;
@@ -456,6 +512,7 @@ async function pickFromSearchGenre(){
 
   let {items, total: t} = await randomTrackPool(q);
   let note = '';
+  
   if(t === 0 && genreTag){
     ({items, total: t} = await randomTrackPool(`genre:"${genreTag}"`));
     if(t > 0) note = `（${era.replace('s','年代')}に絞ると見つからなかったため年代条件を外しました）`;
@@ -469,7 +526,7 @@ async function pickFromSearchGenre(){
   if(genreTag === 'anime') items = biasAnimeTracks(items);
 
   if(selectedLangs.size){
-    selectedLangs.forEach(langLabel => { items = biasLanguage(items, LANG_BIAS[langLabel]); });
+    selectedLangs.forEach(langLabel => { items = biasLanguage(items, LANG_OPTIONS[langLabel]); });
   } else if(genreTag === 'anime'){
     items = biasJapanese(items);
   }
@@ -493,6 +550,10 @@ async function pickFromSearchKeyword(){
     if(t > 0) note = '（年代条件を外しました）';
   }
   if(items.length === 0) return {track: null, note: `「${kw}」に一致する曲が見つかりませんでした`};
+  
+  if(selectedLangs.size){
+    selectedLangs.forEach(langLabel => { items = biasLanguage(items, LANG_OPTIONS[langLabel]); });
+  }
   return {track: pickRandomAvoidingRecent(items), note};
 }
 
@@ -571,13 +632,24 @@ function buildEraChips(){
 function buildGenreChips(){
   const wrap = $('genreChips'); wrap.innerHTML = '';
   GENRE_LIST.forEach(g => {
-    const isLang = LANG_BIAS.hasOwnProperty(g);
     const c = document.createElement('div');
-    c.className = 'chip'; c.textContent = isLang ? g + '(AND)' : g;
+    c.className = 'chip'; c.textContent = g;
     c.onclick = () => {
       c.classList.toggle('selected');
-      const set = isLang ? selectedLangs : selectedGenres;
-      set.has(g) ? set.delete(g) : set.add(g);
+      selectedGenres.has(g) ? selectedGenres.delete(g) : selectedGenres.add(g);
+    };
+    wrap.appendChild(c);
+  });
+}
+function buildLangChips(){
+  const wrap = $('langChips'); wrap.innerHTML = '';
+  Object.keys(LANG_OPTIONS).forEach(lang => {
+    const c = document.createElement('div');
+    c.className = 'chip filter-chip';
+    c.innerHTML = `<span class="icon">${lang === '邦楽' ? '🇯🇵' : '🌍'}</span> ${lang}`;
+    c.onclick = () => {
+      c.classList.toggle('selected');
+      selectedLangs.has(lang) ? selectedLangs.delete(lang) : selectedLangs.add(lang);
     };
     wrap.appendChild(c);
   });
@@ -638,6 +710,7 @@ async function boot(){
   }
   buildEraChips();
   buildGenreChips();
+  buildLangChips();
   renderKeywordChips();
   updateScore();
 }
