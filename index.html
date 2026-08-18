@@ -13,8 +13,8 @@
     --bg-raised:#1D1A26;
     --text:#F2EFE9;
     --text-dim:#9A93A8;
-    --accent:#FF4B3E;      /* buzzer red-orange */
-    --gold:#E8B94A;        /* dial gold */
+    --accent:#FF4B3E;
+    --gold:#E8B94A;
     --ok:#6FCF97;
     --ng:#F26D6D;
     --ring:rgba(232,185,74,0.35);
@@ -22,8 +22,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
   body{
-    background:
-      radial-gradient(circle at 50% -10%, #241F30 0%, var(--bg) 55%);
+    background:radial-gradient(circle at 50% -10%, #241F30 0%, var(--bg) 55%);
     color:var(--text);
     font-family:'Inter',sans-serif;
     min-height:100vh;
@@ -31,38 +30,23 @@
   }
   .wrap{max-width:520px;margin:0 auto;padding:20px 18px 60px;}
   header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;}
-  h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-weight:700;
-    font-size:22px;
-    letter-spacing:0.5px;
-    margin:0;
-  }
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;letter-spacing:0.5px;margin:0;}
   h1 span{color:var(--accent);}
-  .status{font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;text-align:right;line-height:1.4;}
+  .status{font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;text-align:right;line-height:1.4;max-width:150px;}
 
-  /* ---------- login screen ---------- */
-  .card{
-    background:var(--bg-raised);
-    border:1px solid rgba(255,255,255,0.06);
-    border-radius:16px;
-    padding:22px;
-    margin-bottom:16px;
-  }
+  .card{background:var(--bg-raised);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:22px;margin-bottom:16px;}
   .card h2{font-family:'Space Grotesk',sans-serif;font-size:15px;margin:0 0 12px;color:var(--gold);letter-spacing:0.3px;}
   label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;}
   input[type=text]{
     width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);
-    background:#0F0D14;color:var(--text);font-size:14px;font-family:'JetBrains Mono',monospace;
-    outline:none;
+    background:#0F0D14;color:var(--text);font-size:14px;font-family:'JetBrains Mono',monospace;outline:none;
   }
   input[type=text]:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--ring);}
   .btn{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     background:var(--accent);color:#1A0E0C;border:none;border-radius:10px;
     font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;
-    padding:13px 18px;cursor:pointer;transition:transform .12s ease, filter .12s ease;
-    width:100%;margin-top:14px;
+    padding:13px 18px;cursor:pointer;transition:transform .12s ease, filter .12s ease;width:100%;margin-top:14px;
   }
   .btn:active{transform:scale(0.97);}
   .btn:hover{filter:brightness(1.08);}
@@ -71,47 +55,30 @@
   .hint{font-size:11.5px;color:var(--text-dim);line-height:1.6;margin-top:10px;}
   .hint code{background:#0F0D14;padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;}
 
-  /* ---------- mode / filters ---------- */
   .tabs{display:flex;gap:8px;margin-bottom:14px;}
-  .tab{
-    flex:1;text-align:center;padding:10px;border-radius:10px;font-size:12.5px;font-weight:700;
-    font-family:'Space Grotesk',sans-serif;cursor:pointer;background:var(--bg-raised);
-    border:1px solid rgba(255,255,255,0.06);color:var(--text-dim);
-  }
+  .tab{flex:1;text-align:center;padding:10px;border-radius:10px;font-size:12.5px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;background:var(--bg-raised);border:1px solid rgba(255,255,255,0.06);color:var(--text-dim);}
   .tab.active{background:rgba(232,185,74,0.12);border-color:var(--gold);color:var(--gold);}
   .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
-  .chip{
-    padding:7px 12px;border-radius:999px;font-size:12px;background:#0F0D14;
-    border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);cursor:pointer;user-select:none;
-  }
+  .chip{padding:7px 12px;border-radius:999px;font-size:12px;background:#0F0D14;border:1px solid rgba(255,255,255,0.12);color:var(--text-dim);cursor:pointer;user-select:none;}
   .chip.selected{background:rgba(255,75,62,0.16);border-color:var(--accent);color:var(--text);}
 
-  /* ---------- vinyl / stage ---------- */
   .stage{display:flex;flex-direction:column;align-items:center;padding:26px 0 8px;}
   .disc-wrap{position:relative;width:210px;height:210px;margin-bottom:18px;}
   .disc{
     width:100%;height:100%;border-radius:50%;cursor:pointer;
-    background:
-      repeating-radial-gradient(circle at 50% 50%, #0D0B12 0 2px, #17141F 2px 4px);
+    background:repeating-radial-gradient(circle at 50% 50%, #0D0B12 0 2px, #17141F 2px 4px);
     border:2px solid rgba(255,255,255,0.06);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:0 12px 30px rgba(0,0,0,0.45);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(0,0,0,0.45);
   }
   .disc .label{
     width:78px;height:78px;border-radius:50%;
     background:conic-gradient(from 90deg, var(--accent), var(--gold), var(--accent));
     display:flex;align-items:center;justify-content:center;
-    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;color:#1A0E0C;
-    text-align:center;line-height:1.2;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;color:#1A0E0C;text-align:center;line-height:1.2;
   }
   .disc .label small{display:block;font-size:9px;font-weight:500;}
   .disc.spinning{animation:spin 2.6s linear infinite;}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-  .disc-wrap::after{
-    content:'';position:absolute;top:-6px;right:6px;width:10px;height:10px;border-radius:50%;
-    background:var(--text-dim);opacity:0.25;
-  }
-  .disc.spinning ~ .pulse{opacity:1;}
   .wave{display:flex;align-items:flex-end;gap:3px;height:26px;margin-bottom:10px;opacity:0.25;transition:opacity .2s;}
   .wave.on{opacity:1;}
   .wave span{width:3px;background:var(--gold);border-radius:2px;animation:bounce 0.9s ease-in-out infinite;}
@@ -128,10 +95,8 @@
   .controls{display:flex;gap:10px;width:100%;margin-top:8px;}
   .controls .btn{margin-top:0;}
 
-  /* ---------- answer panel ---------- */
   .answer{
-    margin-top:18px;background:var(--bg-raised);border-radius:16px;padding:16px;
-    border:1px solid rgba(255,255,255,0.06);
+    margin-top:18px;background:var(--bg-raised);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,0.06);
     display:flex;gap:14px;align-items:center;
     opacity:0;transform:translateY(6px);transition:opacity .25s ease, transform .25s ease;pointer-events:none;
   }
@@ -141,13 +106,10 @@
   .answer .title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .answer .artist{font-size:12.5px;color:var(--text-dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .judge{display:flex;gap:6px;margin-top:10px;}
-  .judge button{
-    flex:1;padding:9px;border-radius:8px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;
-  }
+  .judge button{flex:1;padding:9px;border-radius:8px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;}
   .judge .ok{background:rgba(111,207,151,0.18);color:var(--ok);border:1px solid var(--ok);}
   .judge .ng{background:rgba(242,109,109,0.18);color:var(--ng);border:1px solid var(--ng);}
 
-  /* ---------- score ---------- */
   .score{display:flex;justify-content:space-between;margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);}
   .score b{color:var(--text);font-size:15px;}
 
@@ -162,20 +124,18 @@
     <div class="status" id="statusLine">未接続</div>
   </header>
 
-  <!-- ===== LOGIN SCREEN ===== -->
   <section id="loginScreen" class="card">
     <h2>1. 自分のSpotify Client IDでログイン</h2>
     <label for="clientIdInput">Client ID</label>
     <input type="text" id="clientIdInput" placeholder="Spotify Dashboardで発行したClient ID" autocomplete="off">
     <button class="btn" id="loginBtn">Spotifyでログイン</button>
     <div class="hint">
-      このアプリはURLに埋め込まれる秘密情報を使わないPKCE方式でログインします。<br>
-      Spotify Dashboardのアプリ設定で <b>Redirect URI</b> に、このページを開いているURL（<code id="redirectUriHint"></code>）をそのまま登録してください。<br>
+      PKCE方式でログインします（秘密情報は使いません）。<br>
+      Spotify DashboardのRedirect URIに、このページのURL（<code id="redirectUriHint"></code>）を完全一致で登録してください。<br>
       Web Playback SDKの都合上、<b>Spotify Premiumアカウント</b>でのログインが必要です。
     </div>
   </section>
 
-  <!-- ===== MAIN APP ===== -->
   <div id="appScreen" class="hidden">
 
     <div class="tabs">
@@ -183,7 +143,6 @@
       <div class="tab" id="tabSearch">ジャンル・年代で検索</div>
     </div>
 
-    <!-- playlist mode -->
     <section id="playlistPanel" class="card">
       <h2>プレイリストURL / URI</h2>
       <input type="text" id="playlistInput" placeholder="https://open.spotify.com/playlist/xxxxxxxx">
@@ -191,17 +150,20 @@
       <div class="hint" id="playlistStatus">まだ読み込んでいません。公開プレイリストのURLを貼ってください。</div>
     </section>
 
-    <!-- search mode -->
     <section id="searchPanel" class="card hidden">
       <h2>年代</h2>
       <div class="chip-row" id="eraChips"></div>
+
       <h2 style="margin-top:16px;">ジャンル</h2>
       <div class="chip-row" id="genreChips"></div>
-      <input type="text" id="customGenreInput" placeholder="自由入力ジャンル（任意・Enterで追加）" style="margin-top:10px;">
-      <div class="hint">Spotify検索APIの genre タグはアーティスト単位の目安情報のため、精度は完璧ではありません。狙った曲が出にくい場合はプレイリストモードがおすすめです。</div>
+      <div class="hint">アニメを選ぶと、サウンドトラックやBGM系を除外してOP/EDに寄せた候補を優先します（完全ではありません）。</div>
+
+      <h2 style="margin-top:16px;">キーワード（アーティスト名・アニメ名など）</h2>
+      <div class="chip-row" id="keywordChips"></div>
+      <input type="text" id="keywordInput" placeholder="例: LiSA / 鬼滅の刃（Enterで追加）">
+      <div class="hint">キーワードを1つ以上追加すると、ジャンルの代わりにそちらを使って検索します。年代を選んでいれば絞り込みにも使います。</div>
     </section>
 
-    <!-- stage -->
     <div class="stage">
       <div class="disc-wrap">
         <div class="disc" id="disc">
@@ -212,15 +174,14 @@
         <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
       </div>
       <div class="controls">
-        <button class="btn" id="playBtn">ランダム再生</button>
-        <button class="btn secondary" id="stopBtn">ストップ</button>
+        <button class="btn" id="toggleBtn">再生</button>
+        <button class="btn secondary" id="nextBtn">次の曲</button>
       </div>
       <div class="controls" style="margin-top:10px;">
         <button class="btn secondary" id="revealBtn">こたえを見る</button>
       </div>
     </div>
 
-    <!-- answer -->
     <div class="answer" id="answerPanel">
       <img id="answerArt" alt="">
       <div class="meta">
@@ -251,18 +212,18 @@ const TOKEN_KEY      = 'introdon_tokens';
 const SCOPES = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state';
 
 let player = null, deviceId = null;
-let mode = 'playlist'; // 'playlist' | 'search'
+let mode = 'playlist';
 let playlistPool = [], playedIdx = new Set();
-let selectedEras = new Set(), selectedGenres = new Set();
+let selectedEras = new Set(), selectedGenres = new Set(), selectedKeywords = new Set();
 let currentTrack = null;
+let isPlaying = false;
 let total = 0, correct = 0;
 
 const $ = id => document.getElementById(id);
 
-/* ================= PKCE ヘルパー ================= */
+/* ================= PKCE ================= */
 function b64url(buf){
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 function randomString(len=64){
   const arr = new Uint8Array(len);
@@ -274,9 +235,7 @@ async function pkceChallenge(verifier){
   const hashed = await crypto.subtle.digest('SHA-256', data);
   return b64url(hashed);
 }
-function redirectUri(){
-  return window.location.origin + window.location.pathname;
-}
+function redirectUri(){ return window.location.origin + window.location.pathname; }
 
 /* ================= 認証 ================= */
 async function login(){
@@ -287,12 +246,8 @@ async function login(){
   localStorage.setItem(VERIFIER_KEY, verifier);
   const challenge = await pkceChallenge(verifier);
   const params = new URLSearchParams({
-    client_id: clientId,
-    response_type: 'code',
-    redirect_uri: redirectUri(),
-    code_challenge_method: 'S256',
-    code_challenge: challenge,
-    scope: SCOPES
+    client_id: clientId, response_type: 'code', redirect_uri: redirectUri(),
+    code_challenge_method: 'S256', code_challenge: challenge, scope: SCOPES
   });
   window.location = 'https://accounts.spotify.com/authorize?' + params.toString();
 }
@@ -312,16 +267,11 @@ async function exchangeCodeForToken(code){
   const clientId = localStorage.getItem(CLIENT_ID_KEY);
   const verifier = localStorage.getItem(VERIFIER_KEY);
   const body = new URLSearchParams({
-    client_id: clientId,
-    grant_type: 'authorization_code',
-    code,
-    redirect_uri: redirectUri(),
-    code_verifier: verifier
+    client_id: clientId, grant_type: 'authorization_code', code,
+    redirect_uri: redirectUri(), code_verifier: verifier
   });
   const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body
+    method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body
   });
   if(!res.ok){ console.error(await res.text()); return false; }
   saveTokens(await res.json());
@@ -333,15 +283,9 @@ async function getValidToken(){
   if(!tokens) return null;
   if(Date.now() < tokens.expires_at - 60000) return tokens.access_token;
   const clientId = localStorage.getItem(CLIENT_ID_KEY);
-  const body = new URLSearchParams({
-    grant_type: 'refresh_token',
-    refresh_token: tokens.refresh_token,
-    client_id: clientId
-  });
+  const body = new URLSearchParams({grant_type: 'refresh_token', refresh_token: tokens.refresh_token, client_id: clientId});
   const res = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body
+    method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body
   });
   if(!res.ok) return null;
   const tok = saveTokens(await res.json());
@@ -366,25 +310,28 @@ async function initPlayer(){
     getOAuthToken: cb => { getValidToken().then(t => cb(t)); },
     volume: 0.85
   });
-  player.addListener('ready', ({device_id}) => {
-    deviceId = device_id;
-    setStatus('接続完了・再生準備OK');
-  });
+  player.addListener('ready', ({device_id}) => { deviceId = device_id; setStatus('接続完了・再生準備OK'); });
   player.addListener('not_ready', () => setStatus('デバイスがオフラインです'));
   player.addListener('initialization_error', e => setStatus('初期化エラー: ' + e.message));
   player.addListener('authentication_error', e => setStatus('認証エラー: ' + e.message));
   player.addListener('account_error', () => setStatus('Spotify Premiumアカウントでログインしてください'));
+  player.addListener('player_state_changed', state => {
+    if(!state) return;
+    isPlaying = !state.paused;
+    setDiscState(isPlaying);
+    $('toggleBtn').textContent = isPlaying ? 'ストップ' : '再生';
+  });
   player.connect();
 }
 
-/* ================= 曲プール：プレイリストモード ================= */
+/* ================= プレイリストモード ================= */
 function extractPlaylistId(input){
   const m = input.match(/playlist[\/:]([a-zA-Z0-9]+)/);
   return m ? m[1] : input.trim();
 }
 async function loadPlaylist(){
   const raw = $('playlistInput').value.trim();
-  if(!raw){ return; }
+  if(!raw) return;
   $('playlistStatus').textContent = '読み込み中…';
   const id = extractPlaylistId(raw);
   let items = [];
@@ -394,14 +341,12 @@ async function loadPlaylist(){
       const res = await apiFetch(url);
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      items = items.concat(
-        data.items.map(i => i.track).filter(t => t && t.uri && t.type === 'track')
-      );
+      items = items.concat(data.items.map(i => i.track).filter(t => t && t.uri && t.type === 'track'));
       url = data.next;
     }
     playlistPool = items;
     playedIdx.clear();
-    $('playlistStatus').textContent = `${items.length}曲読み込みました。ランダム再生ボタンでスタート！`;
+    $('playlistStatus').textContent = `${items.length}曲読み込みました。再生ボタンでスタート！`;
   }catch(err){
     $('playlistStatus').textContent = '読み込み失敗（公開プレイリストか確認してください）: ' + err.message;
   }
@@ -415,90 +360,135 @@ function pickFromPlaylist(){
   return playlistPool[idx];
 }
 
-/* ================= 曲プール：検索モード ================= */
+/* ================= 検索モード：共通ヘルパー ================= */
 const ERA_LIST = ['1960s','1970s','1980s','1990s','2000s','2010s','2020s'];
-const GENRE_LIST = ['ポップス','ロック','J-POP','アニメ','ヒップホップ','ジャズ','EDM','シティポップ','K-POP','クラシック','演歌','R&B'];
+const GENRE_TAG_MAP = {
+  'ポップス':'pop', 'ロック':'rock', 'J-POP':'j-pop', 'アニメ':'anime',
+  'ヒップホップ':'hip-hop', 'ジャズ':'jazz', 'EDM':'edm', 'シティポップ':'city pop',
+  'K-POP':'k-pop', 'クラシック':'classical', '演歌':'enka', 'R&B':'r&b'
+};
+const GENRE_LIST = Object.keys(GENRE_TAG_MAP);
+const ANIME_EXCLUDE_RE = /soundtrack|サウンドトラック|score|scoring|bgm|o\.?s\.?t\.?|instrumental|image song|character song|ost/i;
 
-function buildChips(){
-  const eraWrap = $('eraChips'); eraWrap.innerHTML = '';
-  ERA_LIST.forEach(era => {
-    const c = document.createElement('div');
-    c.className = 'chip'; c.textContent = era.replace('s','年代');
-    c.onclick = () => { c.classList.toggle('selected'); toggleSet(selectedEras, era); };
-    eraWrap.appendChild(c);
-  });
-  const genreWrap = $('genreChips'); genreWrap.innerHTML = '';
-  GENRE_LIST.forEach(g => {
-    const c = document.createElement('div');
-    c.className = 'chip'; c.textContent = g;
-    c.onclick = () => { c.classList.toggle('selected'); toggleSet(selectedGenres, g); };
-    genreWrap.appendChild(c);
-  });
-}
-function toggleSet(set, val){ set.has(val) ? set.delete(val) : set.add(val); }
+function eraToYearRange(era){ const start = parseInt(era); return `${start}-${start+9}`; }
 
-$('customGenreInput').addEventListener('keydown', e => {
-  if(e.key === 'Enter' && e.target.value.trim()){
-    const g = e.target.value.trim();
-    selectedGenres.add(g);
-    const c = document.createElement('div');
-    c.className = 'chip selected'; c.textContent = g;
-    c.onclick = () => { c.classList.toggle('selected'); toggleSet(selectedGenres, g); };
-    $('genreChips').appendChild(c);
-    e.target.value = '';
-  }
-});
-
-function eraToYearRange(era){
-  const start = parseInt(era);
-  return `${start}-${start+9}`;
-}
-
-async function pickFromSearch(){
-  const eras = selectedEras.size ? [...selectedEras] : ERA_LIST;
-  const era = eras[Math.floor(Math.random() * eras.length)];
-  let q = `year:${eraToYearRange(era)}`;
-  if(selectedGenres.size){
-    const genre = [...selectedGenres][Math.floor(Math.random() * selectedGenres.size)];
-    q += ` genre:"${genre}"`;
-  }
-  const offset = Math.floor(Math.random() * 990);
+async function fetchSearchPage(q, offset){
   const params = new URLSearchParams({q, type: 'track', limit: 10, offset});
   const res = await apiFetch(`https://api.spotify.com/v1/search?${params}`);
   if(!res.ok) throw new Error('検索失敗 HTTP ' + res.status);
-  const data = await res.json();
-  const items = (data.tracks?.items || []).filter(t => t && t.uri);
-  if(items.length === 0) return null;
-  return items[Math.floor(Math.random() * items.length)];
+  return res.json();
+}
+
+/* 総件数を先に取得し、有効な範囲内でランダムページを何枚か集めてプールを作る */
+async function randomTrackPool(q, pages=3){
+  const first = await fetchSearchPage(q, 0);
+  const totalCount = first.tracks?.total || 0;
+  if(totalCount === 0) return {items: [], total: 0};
+  let pool = [...(first.tracks.items || [])];
+  const maxOffset = Math.min(totalCount - 10, 990);
+  if(maxOffset > 0){
+    const extraPages = Math.min(pages - 1, Math.ceil(maxOffset / 10));
+    for(let i = 0; i < extraPages; i++){
+      const offset = Math.floor(Math.random() * (maxOffset + 1));
+      if(offset === 0) continue;
+      try{
+        const page = await fetchSearchPage(q, offset);
+        pool.push(...(page.tracks?.items || []));
+      }catch(e){ /* 1ページ失敗しても続行 */ }
+    }
+  }
+  const seen = new Set(); const uniq = [];
+  for(const t of pool){ if(t && t.id && !seen.has(t.id)){ seen.add(t.id); uniq.push(t); } }
+  return {items: uniq, total: totalCount};
+}
+
+function biasAnimeTracks(items){
+  const filtered = items.filter(t => !ANIME_EXCLUDE_RE.test(t.name) && !ANIME_EXCLUDE_RE.test(t.album?.name || ''));
+  if(filtered.length === 0) return items;
+  const singles = filtered.filter(t => t.album?.album_type === 'single');
+  return singles.length ? singles : filtered;
+}
+
+/* ================= 検索モード：ジャンル×年代 ================= */
+async function pickFromSearchGenre(){
+  const eras = selectedEras.size ? [...selectedEras] : ERA_LIST;
+  const era = eras[Math.floor(Math.random() * eras.length)];
+  const genreLabel = selectedGenres.size ? [...selectedGenres][Math.floor(Math.random() * selectedGenres.size)] : null;
+  const genreTag = genreLabel ? GENRE_TAG_MAP[genreLabel] : null;
+
+  let q = `year:${eraToYearRange(era)}`;
+  if(genreTag) q += ` genre:"${genreTag}"`;
+
+  let {items, total: t} = await randomTrackPool(q);
+  let note = '';
+  if(t === 0 && genreTag){
+    ({items, total: t} = await randomTrackPool(`genre:"${genreTag}"`));
+    if(t > 0) note = `（${era.replace('s','年代')}に絞ると見つからなかったため年代条件を外しました）`;
+  }
+  if(t === 0){
+    ({items, total: t} = await randomTrackPool(`year:${eraToYearRange(era)}`));
+    if(t > 0) note = `（このジャンルでは見つからなかったためジャンル条件を外しました）`;
+  }
+  if(items.length === 0) return {track: null, note: '条件に合う曲が見つかりませんでした'};
+
+  if(genreTag === 'anime') items = biasAnimeTracks(items);
+  return {track: items[Math.floor(Math.random() * items.length)], note};
+}
+
+/* ================= 検索モード：キーワード ================= */
+async function pickFromSearchKeyword(){
+  const kw = [...selectedKeywords][Math.floor(Math.random() * selectedKeywords.size)];
+  const eras = selectedEras.size ? [...selectedEras] : null;
+  let q = kw;
+  let note = '';
+  if(eras){
+    const era = eras[Math.floor(Math.random() * eras.length)];
+    q += ` year:${eraToYearRange(era)}`;
+  }
+  let {items, total: t} = await randomTrackPool(q);
+  if(t === 0 && eras){
+    ({items, total: t} = await randomTrackPool(kw));
+    if(t > 0) note = '（年代条件を外しました）';
+  }
+  if(items.length === 0) return {track: null, note: `「${kw}」に一致する曲が見つかりませんでした`};
+  return {track: items[Math.floor(Math.random() * items.length)], note};
 }
 
 /* ================= 再生コントロール ================= */
 async function playRandom(){
   if(!deviceId){ setStatus('デバイス準備中です。少し待ってから押してください'); return; }
-  let track;
+  let track, note = '';
   try{
-    track = (mode === 'playlist') ? pickFromPlaylist() : await pickFromSearch();
+    if(mode === 'playlist'){
+      track = pickFromPlaylist();
+      if(!track){ setStatus('プレイリストを読み込んでください'); return; }
+    } else if(selectedKeywords.size){
+      ({track, note} = await pickFromSearchKeyword());
+    } else {
+      ({track, note} = await pickFromSearchGenre());
+    }
   }catch(err){ setStatus(err.message); return; }
-  if(!track){ setStatus(mode === 'playlist' ? 'プレイリストを読み込んでください' : '該当する曲が見つかりません。条件を変えてください'); return; }
+  if(!track){ setStatus(note || '曲が見つかりませんでした'); return; }
 
   currentTrack = track;
   const res = await apiFetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
+    method: 'PUT', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({uris: [track.uri], position_ms: 0})
   });
   if(!res.ok && res.status !== 204){ setStatus('再生失敗 HTTP ' + res.status); return; }
 
   total++;
   hideAnswer();
+  isPlaying = true;
   setDiscState(true);
+  $('toggleBtn').textContent = 'ストップ';
+  setStatus(note || '接続完了・再生中');
   updateScore();
 }
 
-async function stopPlayback(){
-  if(!deviceId) return;
-  await apiFetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {method: 'PUT'});
-  setDiscState(false);
+async function togglePlay(){
+  if(!currentTrack){ await playRandom(); return; }
+  if(player) await player.togglePlay();
 }
 
 function reveal(){
@@ -507,7 +497,6 @@ function reveal(){
   $('answerArtist').textContent = (currentTrack.artists || []).map(a => a.name).join(', ');
   $('answerArt').src = currentTrack.album?.images?.[0]?.url || '';
   $('answerPanel').classList.add('show');
-  setDiscState(false);
 }
 function hideAnswer(){ $('answerPanel').classList.remove('show'); }
 
@@ -520,12 +509,47 @@ function updateScore(){
   $('scoreCorrect').textContent = correct;
   $('scoreRate').textContent = total ? Math.round(correct / total * 100) + '%' : '-';
 }
-
 function setDiscState(playing){
   $('disc').classList.toggle('spinning', playing);
   $('wave').classList.toggle('on', playing);
 }
 function setStatus(msg){ $('statusLine').textContent = msg; }
+
+/* ================= チップ類 ================= */
+function buildEraChips(){
+  const wrap = $('eraChips'); wrap.innerHTML = '';
+  ERA_LIST.forEach(era => {
+    const c = document.createElement('div');
+    c.className = 'chip'; c.textContent = era.replace('s', '年代');
+    c.onclick = () => { c.classList.toggle('selected'); selectedEras.has(era) ? selectedEras.delete(era) : selectedEras.add(era); };
+    wrap.appendChild(c);
+  });
+}
+function buildGenreChips(){
+  const wrap = $('genreChips'); wrap.innerHTML = '';
+  GENRE_LIST.forEach(g => {
+    const c = document.createElement('div');
+    c.className = 'chip'; c.textContent = g;
+    c.onclick = () => { c.classList.toggle('selected'); selectedGenres.has(g) ? selectedGenres.delete(g) : selectedGenres.add(g); };
+    wrap.appendChild(c);
+  });
+}
+function renderKeywordChips(){
+  const wrap = $('keywordChips'); wrap.innerHTML = '';
+  selectedKeywords.forEach(v => {
+    const c = document.createElement('div');
+    c.className = 'chip selected'; c.textContent = v + ' ×';
+    c.onclick = () => { selectedKeywords.delete(v); renderKeywordChips(); };
+    wrap.appendChild(c);
+  });
+}
+$('keywordInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.target.value.trim()){
+    selectedKeywords.add(e.target.value.trim());
+    e.target.value = '';
+    renderKeywordChips();
+  }
+});
 
 /* ================= UI 配線 ================= */
 function switchMode(m){
@@ -540,9 +564,9 @@ $('loginBtn').onclick = login;
 $('loadPlaylistBtn').onclick = loadPlaylist;
 $('tabPlaylist').onclick = () => switchMode('playlist');
 $('tabSearch').onclick = () => switchMode('search');
-$('disc').onclick = playRandom;
-$('playBtn').onclick = playRandom;
-$('stopBtn').onclick = stopPlayback;
+$('disc').onclick = togglePlay;
+$('toggleBtn').onclick = togglePlay;
+$('nextBtn').onclick = playRandom;
 $('revealBtn').onclick = reveal;
 $('judgeOk').onclick = () => judge(true);
 $('judgeNg').onclick = () => judge(false);
@@ -564,7 +588,9 @@ async function boot(){
   } else if(localStorage.getItem(TOKEN_KEY)){
     showApp();
   }
-  buildChips();
+  buildEraChips();
+  buildGenreChips();
+  renderKeywordChips();
   updateScore();
 }
 function showApp(){
