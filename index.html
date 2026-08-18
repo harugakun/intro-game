@@ -73,33 +73,21 @@
     border: 1px solid var(--gold);
     color: var(--gold);
   }
-  .chip.filter-chip .icon {
-    margin-right: 2px;
-    font-size: 13px;
-  }
+  .chip.filter-chip .icon { margin-right: 2px; font-size: 13px; }
 
   /* AND/OR切替可能なキーワードチップデザイン */
   .chip-kw {
-    display: inline-flex;
-    align-items: center;
-    background: #0F0D14;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 999px;
-    overflow: hidden;
-    font-size: 12px;
+    display: inline-flex; align-items: center; background: #0F0D14;
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 999px;
+    overflow: hidden; font-size: 12px;
   }
   .chip-kw .cond {
-    background: rgba(255,255,255,0.08);
-    color: var(--text-dim);
-    padding: 6px 10px;
-    cursor: pointer;
-    font-weight: bold;
-    user-select: none;
-    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255,255,255,0.08); color: var(--text-dim);
+    padding: 6px 10px; font-weight: bold; user-select: none;
+    font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
   }
-  .chip-kw .cond:hover {
-    filter: brightness(1.2);
-  }
+  .chip-kw .cond.clickable { cursor: pointer; }
+  .chip-kw .cond.clickable:hover { filter: brightness(1.3); }
   .chip-kw .cond.and { background: rgba(111,207,151,0.2); color: var(--ok); }
   .chip-kw .cond.or { background: rgba(232,185,74,0.2); color: var(--gold); }
   .chip-kw .text { padding: 6px 10px; color: var(--text); }
@@ -123,6 +111,7 @@
   .disc .label small{display:block;font-size:9px;font-weight:500;}
   .disc.spinning{animation:spin 2.6s linear infinite;}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  
   .wave{display:flex;align-items:flex-end;gap:3px;height:26px;margin-bottom:10px;opacity:0.25;transition:opacity .2s;}
   .wave.on{opacity:1;}
   .wave span{width:3px;background:var(--gold);border-radius:2px;animation:bounce 0.9s ease-in-out infinite;}
@@ -156,7 +145,6 @@
 
   .score{display:flex;justify-content:space-between;margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);}
   .score b{color:var(--text);font-size:15px;}
-
   .hidden{display:none !important;}
 </style>
 </head>
@@ -184,34 +172,37 @@
 
     <div class="tabs">
       <div class="tab active" id="tabPlaylist">プレイリストから出題</div>
-      <div class="tab" id="tabSearch">ジャンル・年代で検索</div>
+      <div class="tab" id="tabSearch">詳細検索から出題</div>
     </div>
 
+    <!-- プレイリストパネル -->
     <section id="playlistPanel" class="card">
       <h2>プレイリストURL / URI</h2>
       <input type="text" id="playlistInput" placeholder="例: https://open.spotify.com/playlist/xxxx">
       <button class="btn secondary" id="loadPlaylistBtn">読み込む</button>
-      <div class="hint" id="playlistStatus">まだ読み込んでいません。公開プレイリストのURLを貼ってください。</div>
+      <div class="hint" id="playlistStatus">公開プレイリストのURLを貼ってください。シェアURLそのまま（?si=...付）でOKです。</div>
     </section>
 
+    <!-- 検索パネル -->
     <section id="searchPanel" class="card hidden">
       <h2>年代</h2>
       <div class="chip-row" id="eraChips"></div>
 
       <h2 style="margin-top:16px;">ジャンル</h2>
       <div class="chip-row" id="genreChips"></div>
-      <div class="hint">Spotify公式のおすすめエンジン（Recommendations API）を使用し、指定したジャンル（最大5つ）に厳密に合致する曲を抽出します。</div>
-
-      <h2 style="margin-top:16px;">言語・地域 (追加絞り込み)</h2>
-      <div class="chip-row" id="langChips"></div>
-      <div class="hint">検索結果の中から、曲名やアーティスト名の文字種でさらに絞り込みます。</div>
+      <div class="hint">Spotifyの検索APIを使用し、指定したジャンル（ランダムに1つ）に合致する曲を抽出します。</div>
 
       <h2 style="margin-top:16px;">キーワード（アーティスト名・アニメ名など）</h2>
       <div class="chip-row" id="keywordChips"></div>
       <input type="text" id="keywordInput" placeholder="例: LiSA （Enterで追加）">
-      <div class="hint">複数追加した際、左側の「AND/OR」バッジをクリックして条件を切り替えられます。キーワードが設定されると、ジャンル指定より優先してキーワード検索が行われます。</div>
+      <div class="hint">追加したキーワードの <b>[AND]</b> をクリックすると <b>[OR]</b> に切り替わります。<br>年代やジャンルが選ばれている場合、それらと「さらに絞り込む（AND）」形で検索します。</div>
+
+      <h2 style="margin-top:16px;">言語・地域 (追加バイアス)</h2>
+      <div class="chip-row" id="langChips"></div>
+      <div class="hint">最終的な検索結果の中から、曲名やアーティスト名の文字種でさらに絞り込みます。</div>
     </section>
 
+    <!-- プレイヤーUI -->
     <div class="stage">
       <div class="disc-wrap">
         <div class="disc" id="disc">
@@ -253,7 +244,6 @@
 </div>
 
 <script>
-/* ================= 定数・状態 ================= */
 const CLIENT_ID_KEY = 'introdon_client_id';
 const VERIFIER_KEY  = 'introdon_code_verifier';
 const TOKEN_KEY      = 'introdon_tokens';
@@ -278,7 +268,6 @@ let total = 0, correct = 0;
 
 const $ = id => document.getElementById(id);
 
-/* ================= PKCE ================= */
 function b64url(buf){
   return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
@@ -294,7 +283,6 @@ async function pkceChallenge(verifier){
 }
 function redirectUri(){ return window.location.origin + window.location.pathname; }
 
-/* ================= 認証 ================= */
 async function login(){
   const clientId = $('clientIdInput').value.trim();
   if(!clientId){ alert('Client IDを入力してください'); return; }
@@ -355,7 +343,6 @@ async function apiFetch(url, opts={}){
   return fetch(url, opts);
 }
 
-/* ================= Web Playback SDK ================= */
 window.onSpotifyWebPlaybackSDKReady = () => {
   if(localStorage.getItem(TOKEN_KEY)) initPlayer();
 };
@@ -381,31 +368,17 @@ async function initPlayer(){
   player.connect();
 }
 
-/* ================= プレイリストモード ================= */
 function extractPlaylistId(input){
-  try {
-    let s = input.trim();
-    if(!s) return null;
-    
-    // クエリパラメータ (?si=...) を安全に除去
-    if(s.includes('?')) s = s.split('?')[0];
-    
-    // URI形式 (spotify:playlist:xxx)
-    if(s.startsWith('spotify:playlist:')){
-      return s.split(':')[2];
-    }
-    
-    // URL形式 (https://open.spotify.com/playlist/xxxx)
-    const match = s.match(/playlist\/([a-zA-Z0-9]+)/);
-    if(match){
-      return match[1];
-    }
-    
-    // 文字列そのまま (ID直打ち)
-    if(/^[a-zA-Z0-9]+$/.test(s)){
-      return s;
-    }
-  } catch(e) {}
+  const str = input.trim();
+  if(!str) return null;
+  
+  // URLやURIからIDだけを正規表現で確実に抜き出す (例: ?si=... なども無視される)
+  const match = str.match(/(?:playlist\/|spotify:playlist:)([a-zA-Z0-9]+)/);
+  if(match) return match[1];
+  
+  // URL等が含まれておらず、ID直打ちの場合のフォールバック
+  if(/^[a-zA-Z0-9]+$/.test(str)) return str;
+  
   return null;
 }
 
@@ -427,13 +400,12 @@ async function loadPlaylist(){
     while(url){
       const res = await apiFetch(url);
       if(res.status === 404){
-        $('playlistStatus').textContent = 'プレイリストが見つかりません。非公開になっているか、URLが間違っています。';
+        $('playlistStatus').textContent = 'プレイリストが見つかりません。非公開設定になっている可能性があります。';
         return;
       }
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       
-      // trackがnullの場合（ローカルファイル等）を除外する安全なフィルタ
       const tracks = data.items
         .filter(i => i.track && i.track.id)
         .map(i => i.track)
@@ -454,7 +426,6 @@ function pickFromPlaylist(){
   return pickRandomAvoidingRecent(playlistPool);
 }
 
-/* 直近に出題した曲をしばらく除外する */
 function rememberTrack(id){
   if(!id) return;
   recentTrackIds.push(id);
@@ -466,9 +437,8 @@ function pickRandomAvoidingRecent(items){
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-/* ================= 検索モード：共通定数・ヘルパー ================= */
 const ERA_LIST = ['1960s','1970s','1980s','1990s','2000s','2010s','2020s'];
-// Spotify公式の seed_genres に対応するジャンル群（Recommendations API用）
+// Search API で使用できるジャンルタグ
 const GENRE_TAG_MAP = {
   'J-POP': 'j-pop',
   'J-ROCK': 'j-rock',
@@ -486,10 +456,9 @@ const GENRE_TAG_MAP = {
   'メタル': 'metal'
 };
 const GENRE_LIST = Object.keys(GENRE_TAG_MAP);
-
-// 追加フィルター用
 const LANG_OPTIONS = { '邦楽': 'jp', '洋楽': 'intl' };
 const JP_CHAR_RE = /[\u3040-\u30ff\u4e00-\u9faf]/;
+const ANIME_EXCLUDE_RE = /soundtrack|サウンドトラック|score|scoring|bgm|o\.?s\.?t\.?|instrumental|image song|character song|ost/i;
 
 function eraToYearRange(era){ const start = parseInt(era); return `${start}-${start+9}`; }
 
@@ -508,8 +477,13 @@ function biasLanguage(items, bias){
   }
   return items;
 }
+function biasAnimeTracks(items){
+  const filtered = items.filter(t => !ANIME_EXCLUDE_RE.test(t.name) && !ANIME_EXCLUDE_RE.test(t.album?.name || ''));
+  if(filtered.length === 0) return items;
+  const singles = filtered.filter(t => t.album?.album_type === 'single');
+  return singles.length ? singles : filtered;
+}
 
-/* ================= Search API 共通プール取得処理 ================= */
 async function fetchSearchPage(q, offset){
   const params = new URLSearchParams({q, type: 'track', limit: 10, offset, market: 'JP'});
   const res = await apiFetch(`https://api.spotify.com/v1/search?${params}`);
@@ -521,8 +495,10 @@ async function randomTrackPool(q, pages=3){
   const first = await fetchSearchPage(q, 0);
   const totalCount = first.tracks?.total || 0;
   if(totalCount === 0) return {items: [], total: 0};
+  
   let pool = [...(first.tracks.items || [])];
-  const maxOffset = Math.min(totalCount - 10, 990);
+  const maxOffset = Math.min(totalCount - 10, 990); // API上限
+  
   if(maxOffset > 0){
     const extraPages = Math.min(pages - 1, Math.ceil(maxOffset / 10));
     for(let i = 0; i < extraPages; i++){
@@ -531,7 +507,7 @@ async function randomTrackPool(q, pages=3){
       try{
         const page = await fetchSearchPage(q, offset);
         pool.push(...(page.tracks?.items || []));
-      }catch(e){ /* 続行 */ }
+      }catch(e){ /* 無視して続行 */ }
     }
   }
   const seen = new Set(); const uniq = [];
@@ -539,104 +515,84 @@ async function randomTrackPool(q, pages=3){
   return {items: uniq, total: totalCount};
 }
 
-/* ================= ロジック1: Recommendations API (ジャンル指定時) ================= */
-async function pickFromRecommendations() {
-  // ジャンルをカンマ区切りで最大5つ抽出
-  const seeds = [...selectedGenres].map(g => GENRE_TAG_MAP[g]).slice(0, 5).join(',');
-  const url = `https://api.spotify.com/v1/recommendations?seed_genres=${seeds}&limit=100&market=JP`;
+// すべての検索条件（キーワード、年代、ジャンル）を結合して Search API に投げる
+async function pickFromSearch() {
+  let qParts = [];
   
-  const res = await apiFetch(url);
-  if(!res.ok) throw new Error('おすすめ取得失敗 HTTP ' + res.status);
-  const data = await res.json();
-  let items = data.tracks || [];
-
-  if(items.length === 0) return {track: null, note: '条件に合う曲が見つかりませんでした'};
-
-  let note = '';
-  // 年代によるローカルフィルタリング
-  if(selectedEras.size > 0) {
-    const filtered = items.filter(t => {
-      if(!t.album || !t.album.release_date) return false;
-      const year = parseInt(t.album.release_date.substring(0, 4));
-      return [...selectedEras].some(era => {
-        const start = parseInt(era);
-        return year >= start && year <= start + 9;
-      });
+  // 1. キーワード部分 (AND/OR を反映)
+  if (selectedKeywords.length > 0) {
+    let kwQuery = '';
+    selectedKeywords.forEach((kw, i) => {
+      // 意図的な完全一致を避けるためダブルクォートは付けず、APIの自然な解釈に任せる
+      if (i === 0) kwQuery += kw.text;
+      else kwQuery += (kw.type === 'OR' ? ' OR ' : ' ') + kw.text;
     });
-    if(filtered.length > 0) {
-      items = filtered;
-    } else {
-      note = '（指定された年代の曲がジャンル内に見つからなかったため、年代条件を外しました）';
-    }
-  }
-
-  // 言語フィルタ
-  if(selectedLangs.size > 0) {
-    let langFiltered = items;
-    selectedLangs.forEach(langLabel => { 
-       langFiltered = biasLanguage(langFiltered, LANG_OPTIONS[langLabel]); 
-    });
-    items = langFiltered;
-  }
-
-  return { track: pickRandomAvoidingRecent(items), note };
-}
-
-/* ================= ロジック2: Search API (キーワード指定時) ================= */
-async function pickFromSearchKeyword(){
-  let q = '';
-  selectedKeywords.forEach((kw, index) => {
-    if (index === 0) {
-      q += `"${kw.text}"`;
-    } else {
-      q += (kw.type === 'OR' ? ' OR ' : ' ') + `"${kw.text}"`;
-    }
-  });
-
-  const eras = selectedEras.size ? [...selectedEras] : null;
-  let note = '';
-  if(eras){
-    const era = eras[Math.floor(Math.random() * eras.length)];
-    q += ` year:${eraToYearRange(era)}`;
+    // 括弧でグループ化して他のフィルタと干渉しないようにする
+    qParts.push(`(${kwQuery})`); 
   }
   
+  // 2. 年代部分 (複数ある場合はランダムに1つ)
+  let selectedEra = null;
+  if (selectedEras.size > 0) {
+    const eras = [...selectedEras];
+    selectedEra = eras[Math.floor(Math.random() * eras.length)];
+    qParts.push(`year:${eraToYearRange(selectedEra)}`);
+  }
+  
+  // 3. ジャンル部分 (複数ある場合はランダムに1つ)
+  let selectedGenre = null;
+  if (selectedGenres.size > 0) {
+    const genres = [...selectedGenres];
+    selectedGenre = genres[Math.floor(Math.random() * genres.length)];
+    const tag = GENRE_TAG_MAP[selectedGenre];
+    if (tag) qParts.push(`genre:"${tag}"`);
+  }
+  
+  // もし何の条件も無い場合は、全曲検索を防ぐためにランダムな年代を追加
+  if (qParts.length === 0) {
+    selectedEra = ERA_LIST[Math.floor(Math.random() * ERA_LIST.length)];
+    qParts.push(`year:${eraToYearRange(selectedEra)}`);
+  }
+  
+  let q = qParts.join(' ');
   let {items, total: t} = await randomTrackPool(q);
+  let note = '';
   
-  // 年代を外して再検索
-  if(t === 0 && eras){
-    let qNoEra = '';
-    selectedKeywords.forEach((kw, index) => {
-      if (index === 0) qNoEra += `"${kw.text}"`;
-      else qNoEra += (kw.type === 'OR' ? ' OR ' : ' ') + `"${kw.text}"`;
-    });
-    ({items, total: t} = await randomTrackPool(qNoEra));
-    if(t > 0) note = '（年代条件を外しました）';
+  // フォールバック1: 厳しすぎて0件なら、ジャンル指定を外して再検索
+  if (t === 0 && selectedGenre) {
+    qParts = qParts.filter(p => !p.startsWith('genre:'));
+    q = qParts.join(' ');
+    ({items, total: t} = await randomTrackPool(q));
+    if (t > 0) note = '（条件に合う曲がなかったため、ジャンル指定を外しました）';
   }
   
-  if(items.length === 0) return {track: null, note: `キーワードに一致する曲が見つかりませんでした`};
-  
-  if(selectedLangs.size){
+  // フォールバック2: それでも0件なら、年代指定を外して再検索
+  if (t === 0 && selectedEra) {
+    qParts = qParts.filter(p => !p.startsWith('year:'));
+    q = qParts.join(' ');
+    if(qParts.length > 0) {
+      ({items, total: t} = await randomTrackPool(q));
+      if (t > 0) note = '（さらに条件が厳しかったため、年代指定も外しました）';
+    }
+  }
+
+  if(items.length === 0) {
+    return {track: null, note: '条件に合う曲が見つかりませんでした。キーワードや条件を変えてみてください。'};
+  }
+
+  // アニメ等のノイズ除去バイアス
+  if (selectedGenre === 'アニメ') items = biasAnimeTracks(items);
+
+  // 言語フィルター
+  if (selectedLangs.size > 0) {
     selectedLangs.forEach(langLabel => { items = biasLanguage(items, LANG_OPTIONS[langLabel]); });
+  } else if (selectedGenre === 'アニメ') {
+    items = biasLanguage(items, 'jp');
   }
+
   return {track: pickRandomAvoidingRecent(items), note};
 }
 
-/* ================= ロジック3: Search API (年代のみ指定時) ================= */
-async function pickFromSearchEraOnly() {
-  const eras = selectedEras.size ? [...selectedEras] : ERA_LIST;
-  const era = eras[Math.floor(Math.random() * eras.length)];
-  let q = `year:${eraToYearRange(era)}`;
-  
-  let {items, total: t} = await randomTrackPool(q);
-  if(items.length === 0) return {track: null, note: '曲が見つかりませんでした'};
-
-  if(selectedLangs.size){
-    selectedLangs.forEach(langLabel => { items = biasLanguage(items, LANG_OPTIONS[langLabel]); });
-  }
-  return {track: pickRandomAvoidingRecent(items), note: ''};
-}
-
-/* ================= 再生コントロール ================= */
 async function playRandom(){
   if(!deviceId){ setStatus('デバイス準備中です。少し待ってから押してください'); return; }
   let track, note = '';
@@ -644,15 +600,8 @@ async function playRandom(){
     if(mode === 'playlist'){
       track = pickFromPlaylist();
       if(!track){ setStatus('プレイリストを読み込んでください'); return; }
-    } else if(selectedKeywords.length > 0){
-      // キーワード優先
-      ({track, note} = await pickFromSearchKeyword());
-    } else if(selectedGenres.size > 0){
-      // Recommendations API 優先
-      ({track, note} = await pickFromRecommendations());
     } else {
-      // 年代のみ or 未指定
-      ({track, note} = await pickFromSearchEraOnly());
+      ({track, note} = await pickFromSearch());
     }
   }catch(err){ setStatus(err.message); return; }
   
@@ -704,7 +653,6 @@ function setDiscState(playing){
 }
 function setStatus(msg){ $('statusLine').textContent = msg; }
 
-/* ================= チップ類 ================= */
 function buildEraChips(){
   const wrap = $('eraChips'); wrap.innerHTML = '';
   ERA_LIST.forEach(era => {
@@ -746,17 +694,20 @@ function renderKeywordChips(){
     const c = document.createElement('div');
     c.className = 'chip-kw';
     
-    // 2つ目以降にAND/ORトグルボタンを表示
-    if (index > 0) {
-      const cond = document.createElement('span');
-      cond.className = `cond ${kw.type.toLowerCase()}`;
+    // 全チップに状況バッジを表示（先頭はクリック不可の「基本」）
+    const cond = document.createElement('span');
+    if (index === 0) {
+      cond.className = 'cond';
+      cond.textContent = '基本';
+    } else {
+      cond.className = `cond clickable ${kw.type.toLowerCase()}`;
       cond.textContent = kw.type;
       cond.onclick = () => {
         kw.type = (kw.type === 'AND') ? 'OR' : 'AND';
         renderKeywordChips();
       };
-      c.appendChild(cond);
     }
+    c.appendChild(cond);
     
     const txt = document.createElement('span');
     txt.className = 'text';
@@ -767,7 +718,7 @@ function renderKeywordChips(){
     del.className = 'del';
     del.textContent = '×';
     del.onclick = () => {
-      selectedKeywords = selectedKeywords.filter(k => k.id !== kw.id);
+      selectedKeywords.splice(index, 1);
       renderKeywordChips();
     };
     c.appendChild(del);
@@ -781,14 +732,13 @@ $('keywordInput').addEventListener('keydown', e => {
     selectedKeywords.push({
       id: kwIdCounter++,
       text: e.target.value.trim(),
-      type: 'AND' // 初期値はAND
+      type: 'AND' // デフォルトはAND追加
     });
     e.target.value = '';
     renderKeywordChips();
   }
 });
 
-/* ================= UI 配線 ================= */
 function switchMode(m){
   mode = m;
   $('tabPlaylist').classList.toggle('active', m === 'playlist');
@@ -809,7 +759,6 @@ $('judgeOk').onclick = () => judge(true);
 $('judgeNg').onclick = () => judge(false);
 $('resetScoreBtn').onclick = () => { total = 0; correct = 0; updateScore(); };
 
-/* ================= 起動処理 ================= */
 async function boot(){
   $('redirectUriHint').textContent = redirectUri();
   const storedClientId = localStorage.getItem(CLIENT_ID_KEY);
