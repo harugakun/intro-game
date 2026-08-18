@@ -213,9 +213,11 @@ const SCOPES = 'streaming user-read-email user-read-private user-modify-playback
 
 let player = null, deviceId = null;
 let mode = 'playlist';
-let playlistPool = [], playedIdx = new Set();
+let playlistPool = [];
 let selectedEras = new Set(), selectedGenres = new Set(), selectedKeywords = new Set();
 let currentTrack = null;
+let recentTrackIds = [];
+const RECENT_LIMIT = 8;
 let isPlaying = false;
 let total = 0, correct = 0;
 
@@ -335,17 +337,20 @@ async function loadPlaylist(){
   $('playlistStatus').textContent = '読み込み中…';
   const id = extractPlaylistId(raw);
   let items = [];
-  let url = `https://api.spotify.com/v1/playlists/${id}/tracks?limit=100&fields=next,items(track(id,uri,name,artists(name),album(images),type))`;
+  let url = `https://api.spotify.com/v1/playlists/${id}/items?limit=100&fields=next,items(track(id,uri,name,artists(name),album(images),type))`;
   try{
     while(url){
       const res = await apiFetch(url);
+      if(res.status === 404){
+        $('playlistStatus').textContent = 'このプレイリストは読み込めませんでした。Spotifyが自動生成する「Daily Mix」「Discover Weekly」「あなたのミックス」などのプレイリストは、2024年の仕様変更で外部アプリから取得できなくなっています。自分で作った通常のプレイリストでお試しください。';
+        return;
+      }
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       items = items.concat(data.items.map(i => i.track).filter(t => t && t.uri && t.type === 'track'));
       url = data.next;
     }
     playlistPool = items;
-    playedIdx.clear();
     $('playlistStatus').textContent = `${items.length}曲読み込みました。再生ボタンでスタート！`;
   }catch(err){
     $('playlistStatus').textContent = '読み込み失敗（公開プレイリストか確認してください）: ' + err.message;
@@ -353,11 +358,19 @@ async function loadPlaylist(){
 }
 function pickFromPlaylist(){
   if(playlistPool.length === 0) return null;
-  if(playedIdx.size >= playlistPool.length) playedIdx.clear();
-  let idx;
-  do { idx = Math.floor(Math.random() * playlistPool.length); } while(playedIdx.has(idx));
-  playedIdx.add(idx);
-  return playlistPool[idx];
+  return pickRandomAvoidingRecent(playlistPool);
+}
+
+/* 直近に出題した曲をしばらく除外する */
+function rememberTrack(id){
+  if(!id) return;
+  recentTrackIds.push(id);
+  if(recentTrackIds.length > RECENT_LIMIT) recentTrackIds.shift();
+}
+function pickRandomAvoidingRecent(items){
+  const fresh = items.filter(t => !recentTrackIds.includes(t.id));
+  const pool = fresh.length ? fresh : items;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 /* ================= 検索モード：共通ヘルパー ================= */
@@ -365,15 +378,37 @@ const ERA_LIST = ['1960s','1970s','1980s','1990s','2000s','2010s','2020s'];
 const GENRE_TAG_MAP = {
   'ポップス':'pop', 'ロック':'rock', 'J-POP':'j-pop', 'アニメ':'anime',
   'ヒップホップ':'hip-hop', 'ジャズ':'jazz', 'EDM':'edm', 'シティポップ':'city pop',
-  'K-POP':'k-pop', 'クラシック':'classical', '演歌':'enka', 'R&B':'r&b'
+  'K-POP':'k-pop', 'クラシック':'classical', '演歌':'enka', 'R&B':'r&b',
+  '邦楽': null, '洋楽': null
 };
+/* 邦楽/洋楽はSpotify側に対応する正式ジャンルタグが無いため、genre:フィルタではなく
+   曲名・アーティスト名の日本語文字有無で絞り込む後処理バイアスとして扱う */
+const LANG_BIAS = { '邦楽': 'jp', '洋楽': 'intl' };
 const GENRE_LIST = Object.keys(GENRE_TAG_MAP);
 const ANIME_EXCLUDE_RE = /soundtrack|サウンドトラック|score|scoring|bgm|o\.?s\.?t\.?|instrumental|image song|character song|ost/i;
+const JP_CHAR_RE = /[\u3040-\u30ff\u4e00-\u9faf]/;
 
 function eraToYearRange(era){ const start = parseInt(era); return `${start}-${start+9}`; }
 
+function hasJapanese(track){
+  const text = (track.name || '') + ' ' + (track.artists || []).map(a => a.name).join(' ') + ' ' + (track.album?.name || '');
+  return JP_CHAR_RE.test(text);
+}
+function biasJapanese(items){
+  const jp = items.filter(hasJapanese);
+  return jp.length ? jp : items;
+}
+function biasLanguage(items, bias){
+  if(bias === 'jp') return biasJapanese(items);
+  if(bias === 'intl'){
+    const intl = items.filter(t => !hasJapanese(t));
+    return intl.length ? intl : items;
+  }
+  return items;
+}
+
 async function fetchSearchPage(q, offset){
-  const params = new URLSearchParams({q, type: 'track', limit: 10, offset});
+  const params = new URLSearchParams({q, type: 'track', limit: 10, offset, market: 'JP'});
   const res = await apiFetch(`https://api.spotify.com/v1/search?${params}`);
   if(!res.ok) throw new Error('検索失敗 HTTP ' + res.status);
   return res.json();
@@ -415,6 +450,7 @@ async function pickFromSearchGenre(){
   const era = eras[Math.floor(Math.random() * eras.length)];
   const genreLabel = selectedGenres.size ? [...selectedGenres][Math.floor(Math.random() * selectedGenres.size)] : null;
   const genreTag = genreLabel ? GENRE_TAG_MAP[genreLabel] : null;
+  const langBias = genreLabel ? LANG_BIAS[genreLabel] : null;
 
   let q = `year:${eraToYearRange(era)}`;
   if(genreTag) q += ` genre:"${genreTag}"`;
@@ -431,8 +467,10 @@ async function pickFromSearchGenre(){
   }
   if(items.length === 0) return {track: null, note: '条件に合う曲が見つかりませんでした'};
 
-  if(genreTag === 'anime') items = biasAnimeTracks(items);
-  return {track: items[Math.floor(Math.random() * items.length)], note};
+  if(genreTag === 'anime') items = biasJapanese(biasAnimeTracks(items));
+  else if(langBias) items = biasLanguage(items, langBias);
+
+  return {track: pickRandomAvoidingRecent(items), note};
 }
 
 /* ================= 検索モード：キーワード ================= */
@@ -451,7 +489,7 @@ async function pickFromSearchKeyword(){
     if(t > 0) note = '（年代条件を外しました）';
   }
   if(items.length === 0) return {track: null, note: `「${kw}」に一致する曲が見つかりませんでした`};
-  return {track: items[Math.floor(Math.random() * items.length)], note};
+  return {track: pickRandomAvoidingRecent(items), note};
 }
 
 /* ================= 再生コントロール ================= */
@@ -471,6 +509,7 @@ async function playRandom(){
   if(!track){ setStatus(note || '曲が見つかりませんでした'); return; }
 
   currentTrack = track;
+  rememberTrack(track.id);
   const res = await apiFetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
     method: 'PUT', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({uris: [track.uri], position_ms: 0})
