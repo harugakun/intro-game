@@ -164,7 +164,10 @@
 
   <header>
     <h1>イントロ<span>ドン</span>練習</h1>
-    <div class="status" id="statusLine">未接続</div>
+    <div style="text-align: right;">
+      <div class="status" id="statusLine">未接続</div>
+      <button class="btn small secondary" id="logoutBtn" style="margin-top: 6px; display: none; padding: 4px 8px; font-size: 10px;">ログアウト (再認証)</button>
+    </div>
   </header>
 
   <section id="loginScreen" class="card">
@@ -258,7 +261,7 @@
 const CLIENT_ID_KEY = 'introdon_client_id';
 const VERIFIER_KEY  = 'introdon_code_verifier';
 const TOKEN_KEY      = 'introdon_tokens';
-const SCOPES = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state';
+const SCOPES = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state playlist-read-private playlist-read-collaborative';
 
 let player = null, deviceId = null;
 let mode = 'playlist';
@@ -410,6 +413,10 @@ async function loadPlaylist(){
   try{
     while(url){
       const res = await apiFetch(url);
+      if(res.status === 403){
+        $('playlistStatus').textContent = 'アクセス権限がありません（403エラー）。非公開プレイリストを読み込むには、右上の「ログアウト」から再度ログインし直してください。それでも失敗する場合は、Spotify公式が外部アプリからのアクセスを制限しているプレイリスト（Daily Mixなど）です。';
+        return;
+      }
       if(res.status === 404){
         $('playlistStatus').textContent = 'プレイリストが見つかりません。非公開設定になっている可能性があります。';
         return;
@@ -573,12 +580,8 @@ async function pickFromSearch() {
     selectedGenre = genres[Math.floor(Math.random() * genres.length)];
     const tag = GENRE_TAG_MAP[selectedGenre];
     if (tag) {
-      if(tag === 'anime') {
-        // アニメの場合は、単純に genre:anime だけでなく、主題歌などがヒットしやすいキーワードを裏で付加
-        qParts.push(`(genre:"anime" OR "主題歌" OR "オープニング" OR "エンディング" OR "OP")`);
-      } else {
-        qParts.push(`genre:"${tag}"`);
-      }
+      // タイトル検索に引っ張られる不具合を防ぐため、純粋なジャンル指定のみにする
+      qParts.push(`genre:"${tag}"`);
     }
   }
 
@@ -620,6 +623,12 @@ async function pickFromSearch() {
     selectedLangs.forEach(langLabel => { items = biasLanguage(items, LANG_OPTIONS[langLabel]); });
   } else if (selectedGenre === 'アニメ') {
     items = biasLanguage(items, 'jp');
+  }
+
+  // ★抽出した曲リストは人気順に並んでいるため、上位半分に絞って有名曲の確率を上げる
+  if (items.length > 10) {
+    const sliceLen = Math.max(10, Math.floor(items.length * 0.5));
+    items = items.slice(0, sliceLen);
   }
 
   return {track: pickRandomAvoidingRecent(items), note};
@@ -783,6 +792,10 @@ $('loginBtn').onclick = login;
 $('loadPlaylistBtn').onclick = loadPlaylist;
 $('tabPlaylist').onclick = () => switchMode('playlist');
 $('tabSearch').onclick = () => switchMode('search');
+$('logoutBtn').onclick = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  window.location.reload();
+};
 $('disc').onclick = togglePlay;
 $('toggleBtn').onclick = togglePlay;
 $('nextBtn').onclick = playRandom;
@@ -815,6 +828,7 @@ async function boot(){
 function showApp(){
   $('loginScreen').classList.add('hidden');
   $('appScreen').classList.remove('hidden');
+  $('logoutBtn').style.display = 'inline-block';
   setStatus('ログイン済み・接続中…');
   if(window.Spotify) initPlayer();
 }
