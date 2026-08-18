@@ -469,8 +469,15 @@ const GENRE_LIST = Object.keys(GENRE_TAG_MAP);
 const LANG_OPTIONS = { '邦楽': 'jp', '洋楽': 'intl' };
 const JP_CHAR_RE = /[\u3040-\u30ff\u4e00-\u9faf]/;
 
-// アニメ選曲の精度を上げるためのノイズ（サントラ・BGM・童謡・カバー）除外フィルタ
-const ANIME_EXCLUDE_RE = /soundtrack|サウンドトラック|score|scoring|bgm|o\.?s\.?t\.?|instrumental|image song|character song|ost|piano|lofi|オルゴール|cover|カヴァー/i;
+// アニメ選曲やマイナー曲の精度を上げるための強力なノイズ除外フィルタ
+const NOISE_RE = /soundtrack|サウンドトラック|score|scoring|bgm|o\.?s\.?t\.?|instrumental|image song|character song|ost|piano|ピアノ|lofi|オルゴール|music box|cover|カヴァー|カラオケ|karaoke|童謡|こどものうた|おはなし|NHK/i;
+
+function isNoiseTrack(t) {
+  const name = t.name || '';
+  const album = t.album?.name || '';
+  const artist = (t.artists || []).map(a => a.name).join(' ');
+  return NOISE_RE.test(name) || NOISE_RE.test(album) || NOISE_RE.test(artist);
+}
 
 function eraToYearRange(era){ const start = parseInt(era); return `${start}-${start+9}`; }
 
@@ -491,19 +498,7 @@ function biasLanguage(items, bias){
 }
 function biasAnimeTracks(items){
   // 童謡やサントラ、ピアノカバーなどを徹底的に排除する
-  const filtered = items.filter(t => {
-    const name = t.name || '';
-    const albumName = t.album?.name || '';
-    const artistNames = (t.artists || []).map(a => a.name).join(' ');
-    
-    // 除外ワードに引っかかったら排除
-    if(ANIME_EXCLUDE_RE.test(name) || ANIME_EXCLUDE_RE.test(albumName)) return false;
-    
-    // 堀江美都子さん等の古い童謡専門アルバムやサントラアーティストの排除
-    if(/童謡|こどものうた|おはなし|NHKおかあさん/i.test(albumName)) return false;
-    
-    return true;
-  });
+  const filtered = items.filter(t => !isNoiseTrack(t));
   
   if(filtered.length === 0) return items;
   // シングルやオリジナル盤を優先
@@ -524,12 +519,17 @@ async function randomTrackPool(q, pages=3){
   if(totalCount === 0) return {items: [], total: 0};
   
   let pool = [...(first.tracks.items || [])];
-  const maxOffset = Math.min(totalCount - 10, 990);
+  
+  // 【重要改善】完全にランダムなオフセット(最大990)だと誰も知らないBGMばかりになるため、
+  // 検索結果の上位（人気曲が集まる上位150件以内）の中から選ぶように制限。
+  const limitTop = 150;
+  const maxOffset = Math.min(totalCount - 10, limitTop);
   
   if(maxOffset > 0){
     const extraPages = Math.min(pages - 1, Math.ceil(maxOffset / 10));
     for(let i = 0; i < extraPages; i++){
-      const offset = Math.floor(Math.random() * (maxOffset + 1));
+      // 10の倍数でランダムなページを引く
+      const offset = Math.floor(Math.random() * (maxOffset / 10 + 1)) * 10;
       if(offset === 0) continue;
       try{
         const page = await fetchSearchPage(q, offset);
@@ -538,7 +538,17 @@ async function randomTrackPool(q, pages=3){
     }
   }
   const seen = new Set(); const uniq = [];
-  for(const t of pool){ if(t && t.id && !seen.has(t.id)){ seen.add(t.id); uniq.push(t); } }
+  for(const t of pool){ 
+    // ノイズ（BGMやカラオケ）はここで弾く
+    if(t && t.id && !seen.has(t.id) && !isNoiseTrack(t)){ 
+      seen.add(t.id); 
+      uniq.push(t); 
+    } 
+  }
+  
+  // 最後にSpotifyの人気度(popularity)順に並び替えて上位の曲が出やすくする
+  uniq.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+  
   return {items: uniq, total: totalCount};
 }
 
@@ -549,6 +559,7 @@ async function pickFromSearch() {
   if (selectedKeywords.length > 0) {
     let kwQuery = '';
     selectedKeywords.forEach((kw, i) => {
+      // 厳密検索すぎるのを防ぐため、単純な結合にする
       if (i === 0) kwQuery += kw.text;
       else kwQuery += (kw.type === 'OR' ? ' OR ' : ' ') + kw.text;
     });
@@ -563,8 +574,8 @@ async function pickFromSearch() {
     const tag = GENRE_TAG_MAP[selectedGenre];
     if (tag) {
       if(tag === 'anime') {
-        // 「アニメ」選択時は、サントラや童謡が引っかからないよう人気のアニメタイアップ語句を強制付与して精度を劇的に向上させる
-        qParts.push(`genre:"anime"`);
+        // アニメの場合は、単純に genre:anime だけでなく、主題歌などがヒットしやすいキーワードを裏で付加
+        qParts.push(`(genre:"anime" OR "主題歌" OR "オープニング" OR "エンディング" OR "OP")`);
       } else {
         qParts.push(`genre:"${tag}"`);
       }
